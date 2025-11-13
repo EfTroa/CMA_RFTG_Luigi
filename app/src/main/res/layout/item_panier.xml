@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:background="@android:color/white"
+    android:elevation="2dp"
+    android:layout_marginBottom="8dp">
+
+    <TextView
+        android:id="@+id/tvTitreFilmPanier"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Titre du film"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnSupprimerFilm"
+        android:layout_marginEnd="8dp"/>
+
+    <TextView
+        android:id="@+id/tvInfoFilmPanier"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="2024 • 2h • PG"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@id/tvTitreFilmPanier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/btnSupprimerFilm"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"/>
+
+    <!-- Contrôles de quantité -->
+    <Button
+        android:id="@+id/btnDiminuerQuantite"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:text="-"
+        android:textSize="18sp"
+        android:padding="0dp"
+        android:enabled="false"
+        app:layout_constraintTop_toBottomOf="@id/tvInfoFilmPanier"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/tvQuantite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        app:layout_constraintTop_toTopOf="@id/btnDiminuerQuantite"
+        app:layout_constraintBottom_toBottomOf="@id/btnDiminuerQuantite"
+        app:layout_constraintStart_toEndOf="@id/btnDiminuerQuantite"
+        android:layout_marginStart="4dp"/>
+
+    <Button
+        android:id="@+id/btnAugmenterQuantite"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:text="+"
+        android:textSize="18sp"
+        android:padding="0dp"
+        android:enabled="false"
+        app:layout_constraintTop_toTopOf="@id/btnDiminuerQuantite"
+        app:layout_constraintBottom_toBottomOf="@id/btnDiminuerQuantite"
+        app:layout_constraintStart_toEndOf="@id/tvQuantite"
+        android:layout_marginStart="4dp"/>
+
+    <Button
+        android:id="@+id/btnSupprimerFilm"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Supprimer"
+        android:textSize="12sp"
+        android:backgroundTint="@android:color/holo_red_dark"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
