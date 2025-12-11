@@ -52,16 +52,33 @@ public class ListefilmsTask extends AsyncTask<URL, Integer, String> {
         int responseCode = -1;
         String sResultatAppel = "";
         try {
+            Log.d("mydebug", "Appel API films: " + urlAAppeler.toString());
+
             //Exemple pour un appel GET
             urlConnection = (HttpURLConnection) urlAAppeler.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.setRequestProperty("Accept", "application/json");
             urlConnection.setRequestProperty("User-Agent", System.getProperty("http.agent"));
-            urlConnection.setRequestProperty("Authorization","Bearer " + "eyJhbGciOiJIUzI1NiJ9.e30.jg2m4pLbAlZv1h5uPQ6fU38X23g65eXMX8q-SXuIPDg");
+            urlConnection.setRequestProperty("Authorization","Bearer eyJhbGciOiJIUzI1NiJ9.e30.jg2m4pLbAlZv1h5uPQ6fU38X23g65eXMX8q-SXuIPDg");
 
-
+            Log.d("mydebug", "Connexion établie, lecture response code...");
             responseCode = urlConnection.getResponseCode();
+            Log.d("mydebug", "Response Code: " + responseCode);
+
+            // Vérifier si non autorisé (401)
+            if (responseCode == 401) {
+                Log.e("mydebug", "Non autorisé. Redirection vers login.");
+                screen.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TokenManager.getInstance(screen).clearToken();
+                        screen.finish(); // Fermer l'activité actuelle
+                    }
+                });
+                return "";
+            }
+
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
             //lecture du résulat de l'appel et alimentation de la chaine de caractères à renvoyer vers l'appelant
@@ -70,12 +87,16 @@ public class ListefilmsTask extends AsyncTask<URL, Integer, String> {
                 sResultatAppel = sResultatAppel + (char) codeCaractere;
             }
             in.close();
+
+            Log.d("mydebug", "Films récupérés, taille: " + sResultatAppel.length());
         } catch (IOException ioe) {
-            Log.d("mydebug", ">>>Pour appelerServiceRestHttp - IOException ioe =" + ioe.toString());
+            Log.e("mydebug", ">>>Pour appelerServiceRestHttp - IOException ioe =" + ioe.toString());
         } catch (Exception e) {
-            Log.d("mydebug",">>>Pour appelerServiceRestHttp - Excep-tion="+e.toString());
+            Log.e("mydebug",">>>Pour appelerServiceRestHttp - Exception="+e.toString());
         } finally {
-            urlConnection.disconnect();
+            if (urlConnection != null) {
+                urlConnection.disconnect();
+            }
         }
         return sResultatAppel;
     }
