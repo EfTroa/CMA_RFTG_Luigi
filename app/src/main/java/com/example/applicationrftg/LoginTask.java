@@ -10,6 +10,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.MessageDigest;
 
 public class LoginTask extends AsyncTask<Void, Void, Integer> {
     private static final String TAG = "LoginTask";
@@ -42,7 +43,7 @@ public class LoginTask extends AsyncTask<Void, Void, Integer> {
             // Créer le JSON body
             JSONObject requestBody = new JSONObject();
             requestBody.put("email", email);
-            requestBody.put("password", password);
+            requestBody.put("password", encrypterChaineMD5(password));
 
             // Envoyer la requête
             OutputStream os = connection.getOutputStream();
@@ -96,5 +97,27 @@ public class LoginTask extends AsyncTask<Void, Void, Integer> {
                 callback.onLoginError("Échec de connexion. Vérifiez vos identifiants.");
             }
         }
+    }
+
+    // ENCRYPTAGE EN MD5
+    private String encrypterChaineMD5(String chaine) {
+        byte[] chaineBytes = chaine.getBytes();
+        byte[] hash = null;
+        try {
+            hash = MessageDigest.getInstance("MD5").digest(chaineBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        StringBuffer hashString = new StringBuffer();
+        for (int i = 0; i < hash.length; ++i) {
+            String hex = Integer.toHexString(hash[i]);
+            if (hex.length() == 1) {
+                hashString.append('0');
+                hashString.append(hex.charAt(hex.length() - 1));
+            } else {
+                hashString.append(hex.substring(hex.length() - 2));
+            }
+        }
+        return hashString.toString();
     }
 }
