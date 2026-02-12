@@ -37,15 +37,48 @@ public class DetailfilmActivity extends AppCompatActivity {
         // Gérer le clic sur le bouton Ajouter au panier
         Button btnAjouterPanier = findViewById(R.id.btnAjouterPanier);
         btnAjouterPanier.setOnClickListener(v -> {
+            android.util.Log.d("DetailfilmActivity", ">>> Bouton Ajouter au panier cliqué");
             if (filmActuel != null) {
-                PanierManager panierManager = PanierManager.getInstance(this);
-                boolean ajout = panierManager.ajouterFilm(filmActuel);
+                // Récupérer le customerId
+                TokenManager tokenManager = TokenManager.getInstance(this);
+                Integer customerId = tokenManager.getCustomerId();
 
-                if (ajout) {
-                    Toast.makeText(this, "Film ajouté au panier", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Ce film est déjà dans le panier", Toast.LENGTH_SHORT).show();
+                android.util.Log.d("DetailfilmActivity", ">>> CustomerId: " + customerId + ", FilmId: " + filmActuel.getId());
+
+                if (customerId == null) {
+                    Toast.makeText(this, "Erreur: Vous devez être connecté", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                try {
+                    android.util.Log.d("DetailfilmActivity", ">>> Avant création AddToCartTask");
+                    // Appeler l'API pour ajouter au panier (crée rental avec status_id = 2)
+                    new AddToCartTask(this, customerId, filmActuel.getId(), new AddToCartTask.AddToCartCallback() {
+                    @Override
+                    public void onAddToCartSuccess() {
+                        // Ajouter aussi au panier local pour l'affichage
+                        PanierManager panierManager = PanierManager.getInstance(DetailfilmActivity.this);
+                        panierManager.ajouterFilm(filmActuel);
+
+                        Toast.makeText(DetailfilmActivity.this,
+                            "Film ajouté au panier",
+                            Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onAddToCartError(String errorMessage) {
+                        Toast.makeText(DetailfilmActivity.this,
+                            errorMessage,
+                            Toast.LENGTH_LONG).show();
+                    }
+                }).execute();
+                    android.util.Log.d("DetailfilmActivity", ">>> Après execute AddToCartTask");
+                } catch (Exception e) {
+                    android.util.Log.e("DetailfilmActivity", ">>> ERREUR lors de l'ajout au panier", e);
+                    Toast.makeText(this, "Erreur: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            } else {
+                android.util.Log.e("DetailfilmActivity", ">>> filmActuel est NULL!");
             }
         });
     }

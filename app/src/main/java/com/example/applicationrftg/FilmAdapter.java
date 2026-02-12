@@ -46,14 +46,36 @@ public class FilmAdapter extends ArrayAdapter<Film> {
 
         // Gérer le clic sur le bouton Ajouter au panier
         btnAjouterPanier.setOnClickListener(v -> {
-            PanierManager panierManager = PanierManager.getInstance(context);
-            boolean ajout = panierManager.ajouterFilm(film);
+            android.util.Log.d("FilmAdapter", ">>> Bouton Ajouter au panier cliqué pour: " + film.getTitre());
 
-            if (ajout) {
-                Toast.makeText(context, "Film ajouté au panier", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(context, "Ce film est déjà dans le panier", Toast.LENGTH_SHORT).show();
+            // Récupérer le customerId
+            TokenManager tokenManager = TokenManager.getInstance(context);
+            Integer customerId = tokenManager.getCustomerId();
+
+            android.util.Log.d("FilmAdapter", ">>> CustomerId: " + customerId + ", FilmId: " + film.getId());
+
+            if (customerId == null) {
+                Toast.makeText(context, "Erreur: Vous devez être connecté", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            // Appeler l'API pour ajouter au panier (crée rental avec status_id = 2)
+            new AddToCartTask(context, customerId, film.getId(), new AddToCartTask.AddToCartCallback() {
+                @Override
+                public void onAddToCartSuccess() {
+                    // Ajouter aussi au panier local pour l'affichage
+                    PanierManager panierManager = PanierManager.getInstance(context);
+                    panierManager.ajouterFilm(film);
+
+                    Toast.makeText(context, "Film ajouté au panier", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onAddToCartError(String errorMessage) {
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show();
+                }
+            }).execute();
+            android.util.Log.d("FilmAdapter", ">>> Après execute AddToCartTask");
         });
 
         // S'assurer que le bouton ne bloque pas le clic sur l'item

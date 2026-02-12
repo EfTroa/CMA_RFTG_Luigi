@@ -124,12 +124,36 @@ public class PanierActivity extends AppCompatActivity {
                 .setTitle("Valider le panier")
                 .setMessage("Confirmer la validation de " + films.size() + " film(s) ?")
                 .setPositiveButton("Valider", (dialog, which) -> {
-                    // Vider le panier après validation
-                    panierManager.viderPanier();
-                    films.clear();
-                    adapter.notifyDataSetChanged();
-                    tvNombreFilms.setText("0 film(s)");
-                    Toast.makeText(this, "Panier validé avec succès !", Toast.LENGTH_LONG).show();
+                    // Récupérer le customerId
+                    TokenManager tokenManager = TokenManager.getInstance(this);
+                    Integer customerId = tokenManager.getCustomerId();
+
+                    if (customerId == null) {
+                        Toast.makeText(this, "Erreur: Customer ID non trouvé", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    // Appeler l'API pour valider le panier (change status_id de 2 à 3)
+                    new CheckoutTask(this, new CheckoutTask.CheckoutCallback() {
+                        @Override
+                        public void onCheckoutSuccess(int itemsCount) {
+                            // Vider le panier local après validation réussie
+                            panierManager.viderPanier();
+                            films.clear();
+                            adapter.notifyDataSetChanged();
+                            tvNombreFilms.setText("0 film(s)");
+                            Toast.makeText(PanierActivity.this,
+                                "Panier validé avec succès ! (" + itemsCount + " film(s))",
+                                Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onCheckoutError(String errorMessage) {
+                            Toast.makeText(PanierActivity.this,
+                                "Erreur: " + errorMessage,
+                                Toast.LENGTH_LONG).show();
+                        }
+                    }).execute(customerId);
                 })
                 .setNegativeButton("Annuler", null)
                 .show();

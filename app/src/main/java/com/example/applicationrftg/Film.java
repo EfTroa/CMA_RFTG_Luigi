@@ -4,6 +4,10 @@ import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
 public class Film {
+
+    // Constructeur vide (requis pour Gson)
+    public Film() {
+    }
     @SerializedName("filmId")
     private int id;
 
@@ -79,9 +83,7 @@ public class Film {
         }
     }
 
-    // Constructeur vide (requis pour Gson)
-    public Film() {
-    }
+
 
     // Getters
     public int getId() {

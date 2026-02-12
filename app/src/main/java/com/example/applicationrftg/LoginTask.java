@@ -14,7 +14,6 @@ import java.security.MessageDigest;
 
 public class LoginTask extends AsyncTask<Void, Void, Integer> {
     private static final String TAG = "LoginTask";
-    private static final String API_URL = "http://10.0.2.2:8180/customers/verify";
 
     private String email;
     private String password;
@@ -34,7 +33,7 @@ public class LoginTask extends AsyncTask<Void, Void, Integer> {
     @Override
     protected Integer doInBackground(Void... voids) {
         try {
-            URL url = new URL(API_URL);
+            URL url = new URL(UrlManager.getURLConnexion() + "/customers/verify");
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("POST");
             connection.setRequestProperty("Content-Type", "application/json");
