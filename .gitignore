@@ -125,3 +125,6 @@ config.json
 *.ipr
 *.iws
 *.claude/
+
+#Gitignore
+*.gitignore
