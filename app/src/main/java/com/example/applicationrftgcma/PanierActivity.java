@@ -1,4 +1,4 @@
-package com.example.applicationrftg;
+package com.example.applicationrftgcma;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AlertDialog;

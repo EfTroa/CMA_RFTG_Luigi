@@ -1,4 +1,4 @@
-package com.example.applicationrftg;
+package com.example.applicationrftgcma;
 
 import android.content.Intent;
 import android.os.Bundle;

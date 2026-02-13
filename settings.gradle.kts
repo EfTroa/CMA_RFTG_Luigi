@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "applicationrftg"
+rootProject.name = "applicationrftgcma"
 include(":app")
  

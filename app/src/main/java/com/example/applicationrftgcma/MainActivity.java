@@ -1,4 +1,4 @@
-package com.example.applicationrftg;
+package com.example.applicationrftgcma;
 
 import androidx.appcompat.app.AppCompatActivity;
 

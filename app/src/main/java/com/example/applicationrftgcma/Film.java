@@ -1,4 +1,4 @@
-package com.example.applicationrftg;
+package com.example.applicationrftgcma;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.List;

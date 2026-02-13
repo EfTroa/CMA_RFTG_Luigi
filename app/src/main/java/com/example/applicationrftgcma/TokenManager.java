@@ -1,4 +1,4 @@
-package com.example.applicationrftg;
+package com.example.applicationrftgcma;
 
 import android.content.Context;
 import android.content.SharedPreferences;
