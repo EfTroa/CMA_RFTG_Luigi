@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">RFTG_CMA</string>
+    <string name="app_name">RFTG_MarsacCamille</string>
 
     <!-- Liste déroulante serveur -->
     <string-array name="listeURLs">

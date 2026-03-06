@@ -25,7 +25,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ListefilmsActivity" android:exported="false" />
+        <activity android:name=".ListefilmsActivity" android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout" />
         <activity android:name=".DetailfilmActivity" android:exported="false" />
         <activity android:name=".PanierActivity" android:exported="false" />
 

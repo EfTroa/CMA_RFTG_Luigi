@@ -32,6 +32,7 @@ import java.util.Set;
 public class ListefilmsActivity extends AppCompatActivity {
 
     private ProgressBar progressBar;
+    private View loadingOverlay;
     private String listeFilmsResultat = "";
     private ListView listeFilms;
     private ConstraintLayout filterPanel;
@@ -53,6 +54,7 @@ public class ListefilmsActivity extends AppCompatActivity {
 
         listeFilms = findViewById(R.id.listeFilms);
         progressBar = findViewById(R.id.progressBar);
+        loadingOverlay = findViewById(R.id.loadingOverlay);
         filterPanel = findViewById(R.id.filterPanel);
         searchBar = findViewById(R.id.searchBar);
         spinnerCategorie = findViewById(R.id.spinnerCategorie);
@@ -108,12 +110,14 @@ public class ListefilmsActivity extends AppCompatActivity {
         }
     }
 
-    // affichage / masquage de la barre de chargement
+    // affichage / masquage du spinner de chargement
     public void showProgressBar(boolean visible) {
-        progressBar.setVisibility(visible ? View.VISIBLE : View.GONE);
+        int visibility = visible ? View.VISIBLE : View.GONE;
+        loadingOverlay.setVisibility(visibility);
+        progressBar.setVisibility(visibility);
     }
 
-    // callback après l’appel REST
+    // callback après l'appel REST
     public void mettreAJourActivityApresAppelRest(String resultatAppelRest) {
         listeFilmsResultat = resultatAppelRest; // callback
         Log.d("mydebug", ">>>Pour ListefilmsActivity - mettreAJourActivityApresAppelRest=" + listeFilmsResultat);
@@ -142,7 +146,7 @@ public class ListefilmsActivity extends AppCompatActivity {
                 tousLesFilms = new ArrayList<>(films);
                 filmsAffiches = new ArrayList<>(films);
 
-                tvHeader.setText("Liste des films (" + films.size() + " films)");
+                tvHeader.setText("Liste des films");
 
                 // Créer l'adapter et le connecter à la ListView
                 adapter = new FilmAdapter(this, filmsAffiches);
@@ -231,7 +235,7 @@ public class ListefilmsActivity extends AppCompatActivity {
 
         // Mettre à jour le compteur
         TextView tvHeader = findViewById(R.id.tvTitre);
-        tvHeader.setText("Films (" + filmsAffiches.size() + ")");
+        tvHeader.setText("Films");
     }
 
     // Méthode pour initialiser les spinners
@@ -310,6 +314,11 @@ public class ListefilmsActivity extends AppCompatActivity {
         categorieSelectionnee = "Toutes";
         anneeSelectionnee = "Toutes";
         filtrerFilms();
+    }
+
+    // quitter l'application
+    public void quitterApplication(View view) {
+        finishAffinity();
     }
 
     // navigation vers les autres pages

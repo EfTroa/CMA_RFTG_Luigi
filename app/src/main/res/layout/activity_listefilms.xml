@@ -32,6 +32,20 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"/>
 
+        <Button
+            android:id="@+id/btnQuitter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✕"
+            android:textSize="18sp"
+            android:textColor="@android:color/holo_red_dark"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:onClick="quitterApplication"
+            app:layout_constraintTop_toTopOf="@id/btnPanier"
+            app:layout_constraintBottom_toBottomOf="@id/btnPanier"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp"/>
+
         <TextView
             android:id="@+id/tvTitre"
             android:layout_width="wrap_content"
@@ -42,22 +56,10 @@
             android:textColor="@android:color/black"
             app:layout_constraintTop_toTopOf="@id/btnPanier"
             app:layout_constraintBottom_toBottomOf="@id/btnPanier"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="16dp"/>
+            app:layout_constraintStart_toEndOf="@id/btnQuitter"
+            android:layout_marginStart="8dp"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <!-- Barre de progression -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:indeterminateTint="@android:color/holo_red_dark"
-        app:layout_constraintTop_toBottomOf="@id/topSection"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- Barre de recherche avec icônes -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -67,7 +69,7 @@
         android:background="@android:color/white"
         android:padding="12dp"
         android:elevation="3dp"
-        app:layout_constraintTop_toBottomOf="@id/progressBar"
+        app:layout_constraintTop_toBottomOf="@id/topSection"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="16dp"
@@ -212,5 +214,30 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
+
+    <!-- Overlay de chargement (en dernier pour être au-dessus de tout) -->
+    <View
+        android:id="@+id/loadingOverlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#80000000"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Spinner de chargement (en dernier pour être au-dessus de tout) -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:indeterminateTint="@android:color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
