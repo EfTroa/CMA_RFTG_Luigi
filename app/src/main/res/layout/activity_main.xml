@@ -1,4 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    LAYOUT : activity_main.xml (écran de connexion - portrait)
+
+    Structure de la vue :
+    ScrollView (permet de défiler si l'écran est petit)
+     └── ConstraintLayout (conteneur principal avec marge)
+          ├── TextView "Connexion à RFTG" (titre)
+          └── ConstraintLayout (carte blanche, le formulaire)
+               ├── TextView "Email" + EditText (saisie email) + séparateur
+               ├── TextView "Mot de passe" + EditText (saisie mdp) + séparateur
+               ├── Button "Se connecter"
+               ├── TextView "Serveur"
+               ├── Spinner (liste déroulante des URLs)
+               └── EditText (URL personnalisée)
+
+    ConstraintLayout = système de positionnement par contraintes.
+    Chaque vue est positionnée par rapport à une autre ou à son parent.
+    app:layout_constraintTop_toBottomOf = "mon haut est sous le bas de X"
+
+    wrap_content = la vue prend juste la taille nécessaire pour son contenu
+    match_parent = la vue prend toute la taille du parent
+    0dp = dans ConstraintLayout, signifie "remplir entre mes contraintes"
+-->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -8,11 +31,20 @@
     android:fillViewport="true"
     tools:context=".MainActivity">
 
+    <!--
+        Conteneur principal avec padding de 24dp sur tous les côtés.
+        Le padding crée de l'espace entre les bords de l'écran et le contenu.
+    -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <!--
+            Titre de la page : "Connexion à RFTG"
+            textSize en "sp" (scalable pixels) respecte les préférences de taille de police de l'utilisateur
+            layout_marginTop="60dp" crée un espace de 60dp depuis le haut
+        -->
         <TextView
             android:id="@+id/textViewMessage"
             android:layout_width="wrap_content"
@@ -26,7 +58,11 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="60dp"/>
 
-        <!-- Carte blanche contenant le formulaire -->
+        <!--
+            Carte blanche contenant le formulaire.
+            android:elevation="4dp" crée une ombre portée (effet carte Material Design).
+            android:padding="24dp" = espace intérieur entre les bords de la carte et son contenu.
+        -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/loginCard"
             android:layout_width="0dp"
@@ -39,6 +75,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="40dp">
 
+            <!-- Label "Email" affiché en gras au-dessus du champ de saisie -->
             <TextView
                 android:id="@+id/tvEmailLabel"
                 android:layout_width="wrap_content"
@@ -50,6 +87,13 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>
 
+            <!--
+                Champ de saisie de l'email.
+                android:inputType="textEmailAddress" : clavier adapté avec "@" facilement accessible
+                android:drawableStart : icône email affichée à gauche du champ
+                android:drawablePadding : espace entre l'icône et le texte
+                Récupéré dans MainActivity via : etEmail = findViewById(R.id.etEmail)
+            -->
             <EditText
                 android:id="@+id/etEmail"
                 android:layout_width="0dp"
@@ -66,6 +110,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="8dp"/>
 
+            <!-- Séparateur horizontal (ligne grise sous le champ email) -->
             <View
                 android:id="@+id/divider1"
                 android:layout_width="0dp"
@@ -75,6 +120,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
+            <!-- Label "Mot de passe" -->
             <TextView
                 android:id="@+id/tvPasswordLabel"
                 android:layout_width="wrap_content"
@@ -87,6 +133,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 android:layout_marginTop="20dp"/>
 
+            <!--
+                Champ de saisie du mot de passe.
+                android:inputType="textPassword" : masque les caractères saisis (remplacés par des points)
+                android:drawableStart : icône cadenas à gauche
+            -->
             <EditText
                 android:id="@+id/etPassword"
                 android:layout_width="0dp"
@@ -103,6 +154,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 android:layout_marginTop="8dp"/>
 
+            <!-- Séparateur horizontal sous le champ mot de passe -->
             <View
                 android:id="@+id/divider2"
                 android:layout_width="0dp"
@@ -112,6 +164,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
+            <!--
+                Bouton "Se connecter".
+                android:onClick="ouvrirPageListefilms" : au clic, Android appelle la méthode
+                ouvrirPageListefilms(View) dans MainActivity automatiquement.
+                android:backgroundTint : couleur de fond du bouton (bleu foncé)
+            -->
             <Button
                 android:id="@+id/buttonOpenPage"
                 android:layout_width="0dp"
@@ -141,7 +199,12 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/buttonOpenPage" />
 
-            <!-- Menu déroulant URLs -->
+            <!--
+                Menu déroulant URLs
+                Spinner = composant de liste déroulante Android.
+                Peuplé via ArrayAdapter dans MainActivity.onCreate()
+                au moment du chargement de l'activité.
+            -->
             <Spinner
                 android:id="@+id/spinnerURLs"
                 android:layout_width="0dp"
@@ -152,7 +215,11 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textViewServeur" />
 
-            <!-- Zone de texte URL (optionnelle pour saisie manuelle) -->
+            <!--
+                Zone de texte URL (optionnelle pour saisie manuelle)
+                Permet de saisir une URL de serveur autre que celles proposées.
+                android:inputType="textUri" : clavier adapté à la saisie d'URL
+            -->
             <EditText
                 android:id="@+id/editTextURL"
                 android:layout_width="0dp"
@@ -167,6 +234,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/spinnerURLs" />
 
+            <!-- Séparateur horizontal sous le champ URL -->
             <View
                 android:id="@+id/divider3"
                 android:layout_width="0dp"

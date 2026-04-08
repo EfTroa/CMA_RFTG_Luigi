@@ -1,12 +1,47 @@
 <resources>
+    <!--
+        RESSOURCES TEXTE : strings.xml
+
+        Ce fichier centralise toutes les chaînes de caractères de l'application.
+        Avantages :
+         - Facilite la traduction (internationalisation / i18n) : on peut créer
+           un fichier values-fr/strings.xml pour le français, values-en pour l'anglais, etc.
+         - Évite de dupliquer des textes dans le code Java
+         - Permet de modifier un texte à un seul endroit
+
+        Accès depuis Java : getResources().getString(R.string.app_name)
+        Accès depuis XML  : android:text="@string/app_name"
+    -->
+
+    <!-- Nom de l'application affiché dans la barre de titre et l'icône du launcher -->
     <string name="app_name">RFTG_MarsacCamille</string>
 
-    <!-- Liste déroulante serveur -->
+    <!--
+        Liste déroulante serveur
+        string-array = tableau de chaînes accessible via getStringArray(R.array.listeURLs)
+
+        Deux URLs disponibles :
+         - http://10.0.2.2:8180 : adresse spéciale de l'émulateur Android pour atteindre
+           le serveur local de la machine de développement (équivalent de 127.0.0.1)
+           Port 8180 = port du serveur Tomcat/Spring Boot local
+         - http://rftg.mtb111.com : serveur de production accessible depuis Internet
+    -->
     <string-array name="listeURLs">
         <item>http://10.0.2.2:8180</item>
         <item>http://rftg.mtb111.com</item>
     </string-array>
 
-    <!-- Token JWT pour l'authentification API -->
+    <!--
+        Token JWT pour l'authentification API
+
+        JWT = JSON Web Token : standard d'authentification sécurisé.
+        Format : header.payload.signature (3 parties séparées par des points)
+        Utilisé dans les en-têtes HTTP : Authorization: Bearer <token>
+
+        AVERTISSEMENT DE SÉCURITÉ :
+        En production, un token ne devrait JAMAIS être stocké en dur dans le code source.
+        Il devrait être obtenu dynamiquement via une connexion OAuth2 ou similaire.
+        Ici c'est acceptable dans un contexte pédagogique BTS.
+    -->
     <string name="api_jwt_token">eyJhbGciOiJIUzI1NiJ9.e30.jg2m4pLbAlZv1h5uPQ6fU38X23g65eXMX8q-SXuIPDg</string>
 </resources>

@@ -1,9 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    FICHIER MANIFESTE : AndroidManifest.xml
+
+    Le manifeste est le fichier de configuration central d'une application Android.
+    Android le lit pour savoir :
+     - Quelles permissions l'application demande à l'utilisateur
+     - Quelles activités (écrans) composent l'application
+     - Quelle activité est le point d'entrée (LAUNCHER)
+     - Quel thème visuel appliquer
+     - Comment gérer les sauvegardes de données
+
+    TOUTE activité, service, ou receiver doit être déclaré ici,
+    sinon Android refusera de le lancer.
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--
+        PERMISSION INTERNET :
+        L'application a besoin d'accéder à Internet pour appeler l'API REST.
+        Sans cette permission, toute tentative de connexion réseau sera refusée.
+        L'utilisateur voit cette permission lors de l'installation de l'app.
+    -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!--
+        BLOC APPLICATION :
+        Contient la configuration globale de l'application.
+
+        android:allowBackup="true" : Android peut sauvegarder les données de l'app
+        android:icon : icône affichée dans le launcher (écran d'accueil)
+        android:label : nom affiché sous l'icône (valeur de R.string.app_name)
+        android:theme : thème visuel appliqué à toute l'application
+        android:networkSecurityConfig : règles de sécurité réseau (HTTP autorisé en dev)
+        android:supportsRtl="true" : supporte l'affichage de droite à gauche (arabe, hébreu)
+    -->
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -16,6 +47,16 @@
         tools:targetApi="31"
         android:networkSecurityConfig="@xml/network_security_config">
 
+        <!--
+            ACTIVITÉ : MainActivity (Connexion)
+
+            android:exported="true" : peut être démarrée depuis l'extérieur de l'app.
+            Obligatoire pour les activités avec un intent-filter MAIN/LAUNCHER.
+
+            intent-filter : déclare que cette activité est le point d'entrée.
+            - android.intent.action.MAIN : c'est l'activité principale
+            - android.intent.category.LAUNCHER : afficher son icône dans le launcher Android
+        -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -25,9 +66,30 @@
             </intent-filter>
         </activity>
 
+        <!--
+            ACTIVITÉ : ListefilmsActivity (Liste des films)
+
+            android:exported="false" : ne peut être démarrée QUE depuis cette application.
+            Bonne pratique de sécurité pour les activités internes.
+
+            android:configChanges="orientation|screenSize|screenLayout" :
+            L'activité gère elle-même les changements de configuration (rotation de l'écran).
+            Sans cela, Android recrée l'activité à chaque rotation (perd les données chargées).
+            Avec cela, onConfigurationChanged() est appelé à la place (l'activité survit).
+        -->
         <activity android:name=".ListefilmsActivity" android:exported="false"
             android:configChanges="orientation|screenSize|screenLayout" />
+
+        <!--
+            ACTIVITÉ : DetailfilmActivity (Détail d'un film)
+            android:exported="false" : accessible uniquement depuis cette application
+        -->
         <activity android:name=".DetailfilmActivity" android:exported="false" />
+
+        <!--
+            ACTIVITÉ : PanierActivity (Panier)
+            android:exported="false" : accessible uniquement depuis cette application
+        -->
         <activity android:name=".PanierActivity" android:exported="false" />
 
     </application>

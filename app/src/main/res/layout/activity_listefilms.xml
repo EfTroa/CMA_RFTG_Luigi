@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    LAYOUT : activity_listefilms.xml (écran de la liste des films)
+
+    Structure de la vue (de haut en bas) :
+    ConstraintLayout (racine, fond gris)
+     ├── ConstraintLayout topSection (barre du haut blanche)
+     │    ├── Button "✕" (quitter l'application)
+     │    ├── TextView "Films" (titre)
+     │    └── Button "Panier" (navigation vers le panier)
+     ├── ConstraintLayout searchBarContainer (barre de recherche)
+     │    ├── TextView "🔍" (icône)
+     │    ├── EditText searchBar (champ de recherche)
+     │    └── Button "Filtrer" (affiche/masque filterPanel)
+     ├── ConstraintLayout filterPanel (MASQUÉ par défaut, visibility="gone")
+     │    ├── Spinner spinnerCategorie
+     │    ├── Spinner spinnerAnnee
+     │    └── Button "Réinitialiser"
+     ├── ListView listeFilms (la liste des films)
+     ├── View loadingOverlay (fond semi-transparent pendant le chargement)
+     └── ProgressBar progressBar (spinner de chargement)
+
+    ASTUCE : Les éléments déclarés EN DERNIER dans le XML sont affichés AU-DESSUS
+    (z-order). C'est pourquoi l'overlay et la ProgressBar sont à la fin.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,6 +31,12 @@
     android:background="#F5F5F5">
 
     <!-- Zone du haut avec icône panier -->
+    <!--
+        Barre supérieure blanche contenant :
+        - Bouton quitter (gauche)
+        - Titre "Films" (centre gauche)
+        - Bouton "Panier" (droite)
+    -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topSection"
         android:layout_width="match_parent"
@@ -18,6 +48,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!--
+            Bouton Panier : navigue vers PanierActivity.
+            android:onClick="ouvrirPagePanier" appelle ListefilmsActivity.ouvrirPagePanier()
+            background selectableItemBackgroundBorderless = effet ripple sans fond coloré
+        -->
         <Button
             android:id="@+id/btnPanier"
             android:layout_width="wrap_content"
@@ -32,6 +67,10 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginEnd="16dp"/>
 
+        <!--
+            Bouton quitter (✕ rouge) : ferme l'application complètement.
+            android:onClick="quitterApplication" appelle ListefilmsActivity.quitterApplication()
+        -->
         <Button
             android:id="@+id/btnQuitter"
             android:layout_width="wrap_content"
@@ -46,6 +85,7 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="8dp"/>
 
+        <!-- Titre "Films" (ou le message d'état lors du chargement) -->
         <TextView
             android:id="@+id/tvTitre"
             android:layout_width="wrap_content"
@@ -62,6 +102,10 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Barre de recherche avec icônes -->
+    <!--
+        Conteneur de la barre de recherche, avec elevation pour l'ombre.
+        android:elevation="3dp" : légère ombre pour séparer visuellement du fond.
+    -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/searchBarContainer"
         android:layout_width="0dp"
@@ -76,6 +120,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="12dp">
 
+        <!-- Icône loupe (emoji, pas une vraie image) -->
         <TextView
             android:id="@+id/iconSearch"
             android:layout_width="wrap_content"
@@ -88,6 +133,13 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="4dp"/>
 
+        <!--
+            Champ de recherche textuelle.
+            android:focusable="false" : le champ n'est pas focusable par défaut
+            android:focusableInTouchMode="true" : il devient focusable au toucher
+            Cette combinaison est gérée via setOnTouchListener dans ListefilmsActivity
+            pour éviter que le clavier s'ouvre trop tôt.
+        -->
         <EditText
             android:id="@+id/searchBar"
             android:layout_width="0dp"
@@ -105,6 +157,7 @@
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"/>
 
+        <!-- Bouton "Filtrer" : affiche/masque le panneau de filtres (filterPanel) -->
         <Button
             android:id="@+id/btnFiltre"
             android:layout_width="wrap_content"
@@ -123,6 +176,12 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Panneau de filtre (caché par défaut) -->
+    <!--
+        android:visibility="gone" : le panneau est MASQUÉ au démarrage et n'occupe pas de place.
+        Différence avec visibility="invisible" : "gone" ne réserve pas d'espace, "invisible" si.
+        Le code Java bascule entre gone et visible via toggleFilterPanel().
+        android:elevation="6dp" : affiché au-dessus de la liste quand visible
+    -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/filterPanel"
         android:layout_width="0dp"
@@ -138,6 +197,7 @@
         android:layout_marginEnd="16dp"
         android:layout_marginTop="4dp">
 
+        <!-- Label "Catégorie :" -->
         <TextView
             android:id="@+id/tvCategorieLabel"
             android:layout_width="wrap_content"
@@ -149,6 +209,11 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"/>
 
+        <!--
+            Spinner de filtre par catégorie.
+            Peuplé dynamiquement dans ListefilmsActivity.initialiserSpinners()
+            avec les catégories extraites des films chargés.
+        -->
         <Spinner
             android:id="@+id/spinnerCategorie"
             android:layout_width="0dp"
@@ -160,6 +225,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="8dp"/>
 
+        <!-- Label "Année :" -->
         <TextView
             android:id="@+id/tvAnneeLabel"
             android:layout_width="wrap_content"
@@ -172,6 +238,11 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginTop="16dp"/>
 
+        <!--
+            Spinner de filtre par année.
+            Peuplé dynamiquement dans ListefilmsActivity.initialiserSpinners()
+            avec les années extraites des films, triées en ordre décroissant.
+        -->
         <Spinner
             android:id="@+id/spinnerAnnee"
             android:layout_width="0dp"
@@ -183,6 +254,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginStart="8dp"/>
 
+        <!-- Bouton "Réinitialiser" : remet tous les filtres à zéro -->
         <Button
             android:id="@+id/btnResetFilters"
             android:layout_width="wrap_content"
@@ -197,7 +269,12 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- ListView des films -->
+    <!--
+        ListView des films
+        android:divider="@android:color/transparent" : pas de ligne séparatrice entre items
+        android:dividerHeight="8dp" : espace transparent de 8dp entre chaque item
+        layout_height="0dp" avec des contraintes top et bottom = s'étend pour remplir l'espace disponible
+    -->
     <ListView
         android:id="@+id/listeFilms"
         android:layout_width="0dp"
@@ -215,7 +292,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
 
-    <!-- Overlay de chargement (en dernier pour être au-dessus de tout) -->
+    <!--
+        Overlay de chargement (en dernier pour être au-dessus de tout)
+        android:background="#80000000" : fond noir semi-transparent (alpha 0x80 = 50%)
+        Affiché par-dessus toute l'interface pendant le chargement des films.
+        Empêche l'utilisateur d'interagir avec la liste pendant le chargement.
+    -->
     <View
         android:id="@+id/loadingOverlay"
         android:layout_width="0dp"
@@ -227,7 +309,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Spinner de chargement (en dernier pour être au-dessus de tout) -->
+    <!--
+        Spinner de chargement (en dernier pour être au-dessus de tout)
+        ProgressBar de style "large" = cercle animé qui tourne (indéterminé)
+        Affiché au centre de l'écran sur l'overlay pendant le chargement.
+        android:indeterminateTint="@android:color/white" : couleur blanche (visible sur fond sombre)
+    -->
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleLarge"

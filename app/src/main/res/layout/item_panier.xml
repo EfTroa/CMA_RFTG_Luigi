@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    LAYOUT ITEM : item_panier.xml (un élément de la liste du panier)
+
+    Ce layout est utilisé par PanierAdapter.getView() pour afficher chaque film
+    dans la ListView de PanierActivity.
+
+    Structure de la carte :
+    ConstraintLayout (carte blanche avec ombre)
+     ├── TextView tvTitreFilmPanier (titre en gras, à gauche)
+     ├── TextView tvInfoFilmPanier (année • durée • classification, en gris)
+     ├── Button btnDiminuerQuantite "-" (désactivé)
+     ├── TextView tvQuantite "1" (quantité)
+     ├── Button btnAugmenterQuantite "+" (désactivé)
+     └── Button btnSupprimerFilm "Supprimer" (rouge, à droite)
+
+    NOTE : Les boutons de quantité (-, quantité, +) sont présents mais désactivés
+    (android:enabled="false"). La gestion des quantités n'est pas implémentée dans
+    cette version de l'application.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,6 +28,11 @@
     android:elevation="2dp"
     android:layout_marginBottom="8dp">
 
+    <!--
+        Titre du film (gras, grand)
+        Rempli par PanierAdapter : tvTitreFilmPanier.setText(film.getTitre())
+        Contraint à gauche du bouton Supprimer pour ne pas chevaucher.
+    -->
     <TextView
         android:id="@+id/tvTitreFilmPanier"
         android:layout_width="0dp"
@@ -22,6 +46,11 @@
         app:layout_constraintEnd_toStartOf="@id/btnSupprimerFilm"
         android:layout_marginEnd="8dp"/>
 
+    <!--
+        Informations du film : année • durée formatée • classification
+        Exemple : "2006 • 1h26 • PG"
+        Rempli par PanierAdapter : tvInfoFilmPanier.setText(infos)
+    -->
     <TextView
         android:id="@+id/tvInfoFilmPanier"
         android:layout_width="0dp"
@@ -36,6 +65,12 @@
         android:layout_marginEnd="8dp"/>
 
     <!-- Contrôles de quantité -->
+    <!--
+        Bouton "diminuer la quantité" (-).
+        android:enabled="false" : désactivé, la gestion des quantités
+        n'est pas implémentée dans cette version.
+        Maintenu dans le layout pour une évolution future possible.
+    -->
     <Button
         android:id="@+id/btnDiminuerQuantite"
         android:layout_width="36dp"
@@ -48,6 +83,10 @@
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="8dp"/>
 
+    <!--
+        Affichage de la quantité courante (toujours "1" dans cette version).
+        Positionné à droite du bouton "-".
+    -->
     <TextView
         android:id="@+id/tvQuantite"
         android:layout_width="wrap_content"
@@ -63,6 +102,10 @@
         app:layout_constraintStart_toEndOf="@id/btnDiminuerQuantite"
         android:layout_marginStart="4dp"/>
 
+    <!--
+        Bouton "augmenter la quantité" (+).
+        android:enabled="false" : désactivé (même raison que btnDiminuerQuantite)
+    -->
     <Button
         android:id="@+id/btnAugmenterQuantite"
         android:layout_width="36dp"
@@ -76,6 +119,13 @@
         app:layout_constraintStart_toEndOf="@id/tvQuantite"
         android:layout_marginStart="4dp"/>
 
+    <!--
+        Bouton "Supprimer" (rouge, à droite de la carte).
+        Son gestionnaire est dans PanierAdapter.getView() :
+        btnSupprimerFilm.setOnClickListener → listener.onFilmSupprimer(film, position)
+        PanierActivity implémente le listener et affiche un dialogue de confirmation.
+        backgroundTint="holo_red_dark" : rouge pour signaler une action destructrice.
+    -->
     <Button
         android:id="@+id/btnSupprimerFilm"
         android:layout_width="wrap_content"

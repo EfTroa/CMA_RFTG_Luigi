@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    LAYOUT : activity_panier.xml (écran du panier)
+
+    Structure de la vue :
+    ConstraintLayout (racine, fond gris)
+     ├── ConstraintLayout topBar (barre supérieure blanche)
+     │    ├── Button "◀ Retour"
+     │    └── TextView "Mon Panier"
+     ├── TextView tvNombreFilms (ex: "3 film(s)")
+     ├── ListView listePanier (la liste des films du panier)
+     └── ConstraintLayout buttonsContainer (barre basse blanche fixe)
+          ├── Button "Vider le panier" (gris)
+          └── Button "Valider le panier" (vert)
+
+    La ListView est contrainte entre tvNombreFilms et buttonsContainer,
+    ce qui lui permet de remplir l'espace central sans chevaucher les autres éléments.
+    android:elevation="8dp" sur buttonsContainer garantit que cette barre reste
+    visible au-dessus de la liste.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,6 +26,10 @@
     android:background="#F5F5F5">
 
     <!-- Barre supérieure avec bouton retour -->
+    <!--
+        Barre de navigation fixe en haut.
+        android:elevation="4dp" : ombre portée pour la séparer visuellement du contenu.
+    -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -17,6 +40,10 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!--
+            Bouton "◀ Retour" : ferme PanierActivity et revient à ListefilmsActivity.
+            Gestionnaire dans PanierActivity.onCreate() : btnRetourPanier.setOnClickListener(v -> finish())
+        -->
         <Button
             android:id="@+id/btnRetourPanier"
             android:layout_width="wrap_content"
@@ -31,6 +58,7 @@
             app:layout_constraintStart_toStartOf="parent"
             android:layout_marginStart="8dp"/>
 
+        <!-- Titre "Mon Panier" centré dans la barre -->
         <TextView
             android:id="@+id/tvTitre"
             android:layout_width="0dp"
@@ -48,6 +76,11 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!--
+        Compteur du nombre de films dans le panier.
+        Mis à jour par PanierActivity via : tvNombreFilms.setText(films.size() + " film(s)")
+        Exemple : "3 film(s)" ou "0 film(s)"
+    -->
     <TextView
         android:id="@+id/tvNombreFilms"
         android:layout_width="wrap_content"
@@ -60,6 +93,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"/>
 
+    <!--
+        ListView du panier.
+        Contrainte entre tvNombreFilms (haut) et buttonsContainer (bas) :
+        elle remplit tout l'espace central disponible.
+        Peuplée par PanierAdapter avec les films stockés en SQLite.
+    -->
     <ListView
         android:id="@+id/listePanier"
         android:layout_width="0dp"
@@ -77,6 +116,12 @@
         android:layout_marginTop="8dp"/>
 
     <!-- Conteneur pour les boutons -->
+    <!--
+        Barre d'actions fixée en bas de l'écran.
+        app:layout_constraintBottom_toBottomOf="parent" : collée au bas de l'écran.
+        android:elevation="8dp" : ombre plus forte pour rester visible au-dessus de la liste.
+        La liste ci-dessus est contrainte à "toTopOf" de ce conteneur pour ne pas le chevaucher.
+    -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/buttonsContainer"
         android:layout_width="match_parent"
@@ -88,6 +133,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!--
+            Bouton "Vider le panier" (gris, action secondaire).
+            Son gestionnaire dans PanierActivity.onCreate() :
+            btnViderPanier.setOnClickListener → afficherDialogueConfirmationVider()
+        -->
         <Button
             android:id="@+id/btnViderPanier"
             android:layout_width="0dp"
@@ -100,6 +150,12 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"/>
 
+        <!--
+            Bouton "Valider le panier" (vert, action principale).
+            android:onClick="validerPanier" : appelle PanierActivity.validerPanier() au clic.
+            Lance CheckoutTask pour finaliser les locations sur le serveur.
+            android:backgroundTint="holo_green_dark" : couleur verte = action positive
+        -->
         <Button
             android:id="@+id/buttonValidate"
             android:layout_width="0dp"

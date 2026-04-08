@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    LAYOUT ITEM : item_film.xml (un élément de la liste des films)
+
+    Ce layout est utilisé par FilmAdapter.getView() pour afficher chaque film
+    dans la ListView de ListefilmsActivity.
+
+    Structure de la carte :
+    ConstraintLayout (carte blanche avec ombre)
+     ├── TextView tvTitreFilm (titre en gras, grande taille, à gauche)
+     ├── TextView tvRealisateurFilm (réalisateur en gris, sous le titre)
+     ├── TextView tvAnneeFilm (année en gris petit, sous le réalisateur)
+     └── Button btnAjouterPanierItem (à droite, centré verticalement)
+
+    Le titre, réalisateur et année sont contraints à gauche du bouton
+    (layout_constraintEnd_toStartOf="@id/btnAjouterPanierItem")
+    pour éviter qu'ils ne se superposent.
+
+    android:elevation="2dp" : légère ombre pour l'effet "carte" Material Design.
+    android:layout_marginBottom="8dp" : espace entre les cartes dans la liste.
+-->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,6 +29,11 @@
     android:elevation="2dp"
     android:layout_marginBottom="8dp">
 
+    <!--
+        Titre du film (gras, grand)
+        Rempli via : tvTitre.setText(film.getTitre())
+        0dp en largeur + contraintes = s'étend entre le bord gauche et le bouton
+    -->
     <TextView
         android:id="@+id/tvTitreFilm"
         android:layout_width="0dp"
@@ -22,6 +47,11 @@
         app:layout_constraintEnd_toStartOf="@id/btnAjouterPanierItem"
         android:layout_marginEnd="8dp"/>
 
+    <!--
+        Nom du réalisateur (gris, taille moyenne)
+        Rempli via : tvRealisateur.setText(film.getRealisateur())
+        Positionné juste sous le titre.
+    -->
     <TextView
         android:id="@+id/tvRealisateurFilm"
         android:layout_width="0dp"
@@ -35,6 +65,11 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"/>
 
+    <!--
+        Année de sortie (gris, petite taille)
+        Rempli via : tvAnnee.setText(String.valueOf(film.getAnnee()))
+        Positionné sous le réalisateur.
+    -->
     <TextView
         android:id="@+id/tvAnneeFilm"
         android:layout_width="0dp"
@@ -48,6 +83,14 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"/>
 
+    <!--
+        Bouton "Ajouter au panier" positionné à droite de la carte.
+        Centré verticalement par rapport à la carte entière
+        (constraintTop_toTopOf="parent" + constraintBottom_toBottomOf="parent").
+        Son gestionnaire est défini dans FilmAdapter.getView() :
+        btnAjouterPanier.setOnClickListener(...) appelle AddToCartTask.
+        Petit padding pour réduire sa taille sur la carte.
+    -->
     <Button
         android:id="@+id/btnAjouterPanierItem"
         android:layout_width="wrap_content"
