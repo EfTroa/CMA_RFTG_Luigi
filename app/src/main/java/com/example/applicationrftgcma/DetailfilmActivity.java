@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,6 +65,41 @@ public class DetailfilmActivity extends AppCompatActivity {
         // finish() ferme cette activité et revient à la précédente dans la pile
         Button btnRetour = findViewById(R.id.btnRetour);
         btnRetour.setOnClickListener(v -> finish());
+
+        // Gérer le clic sur le bouton Envoyer un commentaire
+        Button btnEnvoyerCommentaire = findViewById(R.id.btnEnvoyerCommentaire);
+        EditText etNouveauCommentaire = findViewById(R.id.etNouveauCommentaire);
+        btnEnvoyerCommentaire.setOnClickListener(v -> {
+            String texte = etNouveauCommentaire.getText().toString().trim();
+            if (texte.isEmpty()) {
+                Toast.makeText(this, "Veuillez saisir un commentaire", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (filmActuel == null) return;
+
+            TokenManager tokenManager = TokenManager.getInstance(this);
+            Integer customerId = tokenManager.getCustomerId();
+            if (customerId == null) {
+                Toast.makeText(this, "Erreur: Vous devez être connecté", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            new AddCommentTask(this, filmActuel.getId(), customerId, texte, new AddCommentTask.AddCommentCallback() {
+                @Override
+                public void onAddCommentSuccess() {
+                    // Vider le champ de saisie
+                    etNouveauCommentaire.setText("");
+                    Toast.makeText(DetailfilmActivity.this, "Commentaire ajouté", Toast.LENGTH_SHORT).show();
+                    // Recharger les commentaires pour afficher le nouveau
+                    chargerCommentaires(filmActuel.getId());
+                }
+
+                @Override
+                public void onAddCommentError(String errorMessage) {
+                    Toast.makeText(DetailfilmActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                }
+            }).execute();
+        });
 
         // Gérer le clic sur le bouton Ajouter au panier
         Button btnAjouterPanier = findViewById(R.id.btnAjouterPanier);
@@ -233,5 +269,33 @@ public class DetailfilmActivity extends AppCompatActivity {
         } else {
             tvCategories.setText("Aucune catégorie");
         }
+
+        chargerCommentaires(film.getId());
+    }
+
+    private void chargerCommentaires(Integer filmId) {
+        new GetCommentsTask(this, filmId, new GetCommentsTask.GetCommentsCallback() {
+
+            @Override
+            public void onGetCommentsSuccess(List<FilmComment> comments) {
+                TextView tvCommentaires = findViewById(R.id.tvCommentaires);
+                if (comments == null || comments.isEmpty()) {
+                    tvCommentaires.setText("Aucun commentaire pour ce film.");
+                    return;
+                }
+                StringBuilder sb = new StringBuilder();
+                for (FilmComment comment : comments) {
+                    sb.append("• ").append(comment.getCustomerName()).append(" :\n");
+                    sb.append("  ").append(comment.getCommentText()).append("\n\n");
+                }
+                tvCommentaires.setText(sb.toString().trim());
+            }
+
+            @Override
+            public void onGetCommentsError(String errorMessage) {
+                TextView tvCommentaires = findViewById(R.id.tvCommentaires);
+                tvCommentaires.setText("Impossible de charger les commentaires.");
+            }
+        }).execute();
     }
 }
