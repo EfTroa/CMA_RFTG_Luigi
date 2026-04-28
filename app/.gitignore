@@ -1,1 +1,3 @@
 /build
+src/main/java/com/example/applicationrftgcma/task/TemplatePostTask.java
+src/main/java/com/example/applicationrftgcma/task/TemplateGetTask.java

@@ -20,7 +20,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.applicationrftgcma.R;
 import com.example.applicationrftgcma.adapter.FilmAdapter;
-import com.example.applicationrftgcma.manager.UrlManager;
 import com.example.applicationrftgcma.model.Film;
 import com.example.applicationrftgcma.task.ListefilmsTask;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -29,7 +28,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -149,12 +147,9 @@ public class ListefilmsActivity extends AppCompatActivity {
         btnResetFilters.setOnClickListener(v -> reinitialiserFiltres());
 
         // Lancer le chargement asynchrone de la liste des films depuis l'API
-        try {
-            URL url = new URL(UrlManager.getURLConnexion() + "/films");
-            new ListefilmsTask(this).execute(url);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // L'URL est construite directement dans ListefilmsTask.doInBackground() via UrlManager,
+        // donc execute() n'a pas besoin de paramètre (AsyncTask<Void, Void, String>)
+        new ListefilmsTask(this).execute();
     }
 
     /**

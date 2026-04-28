@@ -9,12 +9,17 @@ import com.example.applicationrftgcma.manager.PanierManager;
 import com.example.applicationrftgcma.manager.TokenManager;
 import com.example.applicationrftgcma.model.Film;
 import com.example.applicationrftgcma.task.CheckoutTask;
+import com.example.applicationrftgcma.task.ClearCartTask;
+import com.example.applicationrftgcma.task.RemoveFromCartTask;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,20 +134,26 @@ public class PanierActivity extends AppCompatActivity {
                 .setTitle("Supprimer du panier")
                 .setMessage("Voulez-vous supprimer \"" + film.getTitre() + "\" du panier ?")
                 .setPositiveButton("Oui", (dialog, which) -> {
-                    // Supprimer de la base de données SQLite via PanierManager
-                    boolean supprime = panierManager.supprimerFilm(film.getId());
+                    // 1. D'abord supprimer le rental côté serveur via API DELETE /cart/{rentalId}
+                    new RemoveFromCartTask(this, film.getRentalId(), new RemoveFromCartTask.RemoveFromCartCallback() {
+                        @Override
+                        public void onRemoveSuccess() {
+                            // 2. Serveur OK → supprimer aussi du SQLite local
+                            panierManager.supprimerFilm(film.getId());
+                            films.remove(position);
+                            adapter.notifyDataSetChanged();
+                            tvNombreFilms.setText(films.size() + " film(s)");
+                            Toast.makeText(PanierActivity.this, "Film supprimé du panier", Toast.LENGTH_SHORT).show();
+                        }
 
-                    if (supprime) {
-                        // Synchroniser la liste locale avec la base (évite un rechargement complet)
-                        films.remove(position);
-                        adapter.notifyDataSetChanged();
-                        tvNombreFilms.setText(films.size() + " film(s)");
-                        Toast.makeText(this, "Film supprimé du panier", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this, "Erreur lors de la suppression", Toast.LENGTH_SHORT).show();
-                    }
+                        @Override
+                        public void onRemoveError(String errorMessage) {
+                            // Erreur serveur → on ne touche pas au SQLite local
+                            Toast.makeText(PanierActivity.this, "Erreur: " + errorMessage, Toast.LENGTH_SHORT).show();
+                        }
+                    }).execute();
                 })
-                .setNegativeButton("Non", null) // null = fermer le dialogue sans action
+                .setNegativeButton("Non", null)
                 .show();
     }
 
@@ -155,14 +166,29 @@ public class PanierActivity extends AppCompatActivity {
                 .setTitle("Vider le panier")
                 .setMessage("Voulez-vous supprimer tous les films du panier ?")
                 .setPositiveButton("Oui", (dialog, which) -> {
-                    // Vider la base de données SQLite
-                    panierManager.viderPanier();
+                    Integer customerId = TokenManager.getInstance(this).getCustomerId();
+                    if (customerId == null) {
+                        Toast.makeText(this, "Erreur: Customer ID non trouvé", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
 
-                    // Vider la liste locale et rafraîchir la ListView
-                    films.clear();
-                    adapter.notifyDataSetChanged();
-                    tvNombreFilms.setText("0 film(s)");
-                    Toast.makeText(this, "Panier vidé", Toast.LENGTH_SHORT).show();
+                    // 1. Vider le panier côté serveur via API DELETE /cart/clear/{customerId}
+                    new ClearCartTask(this, customerId, new ClearCartTask.ClearCartCallback() {
+                        @Override
+                        public void onClearSuccess() {
+                            // 2. Serveur OK → vider aussi le SQLite local
+                            panierManager.viderPanier();
+                            films.clear();
+                            adapter.notifyDataSetChanged();
+                            tvNombreFilms.setText("0 film(s)");
+                            Toast.makeText(PanierActivity.this, "Panier vidé", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onClearError(String errorMessage) {
+                            Toast.makeText(PanierActivity.this, "Erreur: " + errorMessage, Toast.LENGTH_SHORT).show();
+                        }
+                    }).execute();
                 })
                 .setNegativeButton("Non", null)
                 .show();
@@ -196,7 +222,15 @@ public class PanierActivity extends AppCompatActivity {
 
                     // Lancer la validation en arrière-plan via CheckoutTask
                     // Le customerId est passé à execute() → récupéré dans doInBackground(params[0])
-                    new CheckoutTask(this, new CheckoutTask.CheckoutCallback() {
+                    JSONObject requestBody = new JSONObject();
+                    try {
+                        requestBody.put("customerId", customerId);
+                    } catch (JSONException e) {
+                        Toast.makeText(this, "Erreur interne", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    new CheckoutTask(this, requestBody, new CheckoutTask.CheckoutCallback() {
                         @Override
                         public void onCheckoutSuccess(int itemsCount) {
                             // Checkout réussi → vider le panier local (SQLite + liste + affichage)
@@ -216,7 +250,7 @@ public class PanierActivity extends AppCompatActivity {
                                 "Erreur: " + errorMessage,
                                 Toast.LENGTH_LONG).show();
                         }
-                    }).execute(customerId);
+                    }).execute();
                 })
                 .setNegativeButton("Annuler", null)
                 .show();

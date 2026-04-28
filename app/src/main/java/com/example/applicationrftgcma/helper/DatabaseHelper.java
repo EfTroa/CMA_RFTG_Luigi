@@ -30,7 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "panier.db";
 
     // Version du schéma — à incrémenter si on modifie la structure de la table
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
 
     // Nom de la table stockant les films du panier
     private static final String TABLE_PANIER = "panier";
@@ -46,6 +46,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_REALISATEURS   = "realisateurs";
     private static final String COLUMN_ACTEURS        = "acteurs";
     private static final String COLUMN_CATEGORIES     = "categories";
+    private static final String COLUMN_RENTAL_ID      = "rental_id";
 
     // Requête SQL de création de la table au premier lancement
     private static final String DATABASE_CREATE = "create table "
@@ -59,7 +60,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             + COLUMN_CLASSIFICATION + " text, "
             + COLUMN_REALISATEURS   + " text, "
             + COLUMN_ACTEURS        + " text, "
-            + COLUMN_CATEGORIES     + " text);";
+            + COLUMN_CATEGORIES     + " text, "
+            + COLUMN_RENTAL_ID      + " integer);";
 
     /**
      * Constructeur — initialise le helper avec le nom et la version de la base.
@@ -122,6 +124,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_REALISATEURS,   film.getRealisateursString());
         values.put(COLUMN_ACTEURS,        film.getActeursString());
         values.put(COLUMN_CATEGORIES,     film.getCategoriesString());
+        // rental_id nécessaire pour appeler DELETE /cart/{rentalId} lors de la suppression
+        values.put(COLUMN_RENTAL_ID,      film.getRentalId());
 
         // Insérer la ligne — retourne -1 en cas d'échec
         long result = db.insert(TABLE_PANIER, null, values);
@@ -177,6 +181,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 film.setAnnee(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ANNEE)));
                 film.setDuree(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_DUREE)));
                 film.setClassification(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CLASSIFICATION)));
+                // rental_id rechargé pour permettre la suppression via API
+                film.setRentalId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RENTAL_ID)));
 
                 // Note : réalisateurs, acteurs et catégories sont stockés en string CSV
                 // mais ne sont pas rechargés ici car PanierActivity n'en a pas besoin

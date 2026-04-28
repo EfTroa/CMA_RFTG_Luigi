@@ -68,6 +68,10 @@ public class Film {
     @SerializedName("categories")
     private List<Category> categories;
 
+    // ID du rental côté serveur — pas dans le JSON /films, renseigné après un POST /cart/add
+    // Stocké dans SQLite pour pouvoir appeler DELETE /cart/{rentalId} lors de la suppression
+    private int rentalId;
+
     /**
      * Classe interne représentant un réalisateur.
      * Mappée depuis le tableau JSON "directors" : [{ "firstName": "...", "lastName": "..." }]
@@ -349,6 +353,16 @@ public class Film {
     /** Définit la classification (stockée dans le champ rating) */
     public void setClassification(String classification) {
         this.rating = classification;
+    }
+
+    /** @return L'ID du rental côté serveur (0 si pas encore dans le panier) */
+    public int getRentalId() {
+        return rentalId;
+    }
+
+    /** Définit l'ID du rental — appelé dans onAddToCartSuccess() avant ajouterFilm() */
+    public void setRentalId(int rentalId) {
+        this.rentalId = rentalId;
     }
 
     /**

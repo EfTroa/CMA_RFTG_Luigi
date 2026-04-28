@@ -6,28 +6,45 @@ package com.example.applicationrftgcma.task;
  * Ce fichier reçoit le JSON du film passé via l'Intent depuis ListefilmsActivity
  * et le transforme en objet Film utilisable par DetailfilmActivity.
  *
+ * Qui l'appelle : DetailfilmActivity.onCreate()
+ * Ce qu'elle retourne : un objet Film désérialisé (ou null en cas d'erreur de parsing)
+ *
  * Pourquoi une AsyncTask pour juste parser du JSON ?
  *   Dans cette architecture, les traitements de données sont toujours faits hors du thread UI
  *   par convention (même si le parsing JSON seul est rapide). Cela permet aussi d'afficher
  *   une ProgressBar pendant le traitement et de garder la cohérence avec ListefilmsTask.
  *
+ * Pas d'appel réseau dans cette tâche — le JSON est déjà disponible localement via l'Intent.
+ * Aucune méthode appelerReseauPost / appelerReseauGet n'est donc nécessaire.
+ *
  * Flux de données :
  *   ListefilmsActivity → [filmJson via Intent] → DetailfilmActivity
- *   → DetailfilmTask.doInBackground() → parse JSON → Film
- *   → DetailfilmActivity.mettreAJourActivityAvecFilm(film) → affichage
+ *   → new DetailfilmTask(this).execute(filmJson)
+ *   → doInBackground() : parse le JSON avec Gson → retourne l'objet Film
+ *   → onPostExecute()  : appelle DetailfilmActivity.mettreAJourActivityAvecFilm(film)
+ *
+ * AsyncTask<String, Void, Film> :
+ *   - String → execute() reçoit le JSON du film (passé depuis DetailfilmActivity)
+ *   - Void   → pas de progression intermédiaire publiée
+ *   - Film   → doInBackground retourne l'objet Film parsé, reçu par onPostExecute
  */
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.example.applicationrftgcma.activity.DetailfilmActivity;
 import com.example.applicationrftgcma.model.Film;
-import android.util.Log;
 
 import com.google.gson.Gson;
 
-public class DetailfilmTask extends AsyncTask<String, Integer, Film> {
+@SuppressWarnings("deprecation")
+public class DetailfilmTask extends AsyncTask<String, Void, Film> {
+
+    // Tag pour les logs Logcat — permet de filtrer les messages de cette tâche
+    private static final String TAG = "DetailfilmTask";
 
     // Référence à l'activité — volatile pour la visibilité entre threads
+    // (doInBackground tourne sur un thread secondaire, onPreExecute/onPostExecute sur l'UI thread)
     private volatile DetailfilmActivity screen;
 
     /**
@@ -51,13 +68,15 @@ public class DetailfilmTask extends AsyncTask<String, Integer, Film> {
 
     /**
      * Exécuté sur un thread secondaire (pas le thread UI).
-     * Reçoit le JSON du film et le désérialise en objet Film via Gson.
+     * Reçoit le JSON du film (params[0]) et le désérialise en objet Film via Gson.
+     * Pas d'appel réseau ici — le JSON est déjà disponible depuis l'Intent.
      *
-     * @param params params[0] = le JSON du film passé depuis DetailfilmActivity
+     * @param params params[0] = le JSON du film passé depuis DetailfilmActivity via execute()
      * @return L'objet Film désérialisé, ou null en cas d'erreur de parsing
      */
     @Override
     protected Film doInBackground(String... params) {
+        // Récupérer le JSON du film passé en paramètre de execute()
         String filmJson = params[0];
         Film film = null;
 
@@ -67,9 +86,9 @@ public class DetailfilmTask extends AsyncTask<String, Integer, Film> {
             Gson gson = new Gson();
             film = gson.fromJson(filmJson, Film.class);
 
-            Log.d("mydebug", ">>>DetailfilmTask - Film parsé : " + film.getTitre());
+            Log.d(TAG, "Film parsé avec succès : " + film.getTitre());
         } catch (Exception e) {
-            Log.e("mydebug", ">>>DetailfilmTask - Erreur : " + e.getMessage());
+            Log.e(TAG, "Erreur de parsing du JSON du film : " + e.getMessage());
             // film reste null — DetailfilmActivity gère ce cas dans mettreAJourActivityAvecFilm()
         }
 
@@ -78,14 +97,15 @@ public class DetailfilmTask extends AsyncTask<String, Integer, Film> {
 
     /**
      * Exécuté sur le thread UI APRÈS doInBackground().
-     * Transmet l'objet Film (ou null) à DetailfilmActivity pour l'affichage.
-     * Cache aussi la ProgressBar.
+     * Transmet l'objet Film (ou null en cas d'erreur) à DetailfilmActivity pour l'affichage.
+     * Cache également la ProgressBar une fois le traitement terminé.
      *
-     * @param film L'objet Film retourné par doInBackground() (peut être null)
+     * @param film L'objet Film retourné par doInBackground() (peut être null si erreur de parsing)
      */
     @Override
     protected void onPostExecute(Film film) {
         // Notifier l'activité avec le film parsé (ou null en cas d'erreur)
+        // DetailfilmActivity.mettreAJourActivityAvecFilm() gère le cas null
         screen.mettreAJourActivityAvecFilm(film);
 
         // Cacher la ProgressBar maintenant que le traitement est terminé

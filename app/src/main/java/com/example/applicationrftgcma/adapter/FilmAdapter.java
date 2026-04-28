@@ -33,6 +33,9 @@ import com.example.applicationrftgcma.manager.TokenManager;
 import com.example.applicationrftgcma.manager.PanierManager;
 import com.example.applicationrftgcma.task.AddToCartTask;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class FilmAdapter extends ArrayAdapter<Film> {
 
     // Contexte Android nécessaire pour inflater les vues et accéder aux ressources
@@ -102,11 +105,23 @@ public class FilmAdapter extends ArrayAdapter<Film> {
                 return;
             }
 
+            JSONObject requestBody = new JSONObject();
+            try {
+                requestBody.put("customerId", customerId);
+                requestBody.put("filmId", film.getId());
+            } catch (JSONException e) {
+                Toast.makeText(this.getContext(), "Erreur interne", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             // Lancer l'appel API en arrière-plan (crée un rental avec status_id = 2 = "dans le panier")
-            new AddToCartTask(context, customerId, film.getId(), new AddToCartTask.AddToCartCallback() {
+            new AddToCartTask(context, requestBody, new AddToCartTask.AddToCartCallback() {
                 @Override
-                public void onAddToCartSuccess() {
-                    // L'API a créé le rental → on synchronise aussi le panier local SQLite
+                public void onAddToCartSuccess(int rentalId) {
+                    // Stocker le rentalId sur le film avant de l'insérer en SQLite
+                    // (nécessaire pour appeler DELETE /cart/{rentalId} lors de la suppression)
+                    film.setRentalId(rentalId);
+
                     PanierManager panierManager = PanierManager.getInstance(context);
                     panierManager.ajouterFilm(film);
 

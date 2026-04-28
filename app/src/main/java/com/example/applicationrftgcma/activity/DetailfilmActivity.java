@@ -32,6 +32,9 @@ import com.example.applicationrftgcma.model.Film;
 import com.example.applicationrftgcma.task.AddToCartTask;
 import com.example.applicationrftgcma.task.DetailfilmTask;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.List;
 
 public class DetailfilmActivity extends AppCompatActivity {
@@ -86,12 +89,24 @@ public class DetailfilmActivity extends AppCompatActivity {
                 }
 
                 try {
+
+                    JSONObject requestBody = new JSONObject();
+                    try {
+                        requestBody.put("customerId", customerId);
+                        requestBody.put("filmId", filmActuel.getId());
+                    } catch (JSONException e) {
+                        Toast.makeText(this, "Erreur interne", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
                     android.util.Log.d("DetailfilmActivity", ">>> Avant création AddToCartTask");
                     // Appeler l'API pour ajouter au panier (crée rental avec status_id = 2)
-                    new AddToCartTask(this, customerId, filmActuel.getId(), new AddToCartTask.AddToCartCallback() {
+                    new AddToCartTask(this, requestBody, new AddToCartTask.AddToCartCallback() {
                     @Override
-                    public void onAddToCartSuccess() {
-                        // Ajouter aussi au panier local pour l'affichage
+                    public void onAddToCartSuccess(int rentalId) {
+                        // Stocker le rentalId sur le film avant de l'insérer en SQLite
+                        filmActuel.setRentalId(rentalId);
+
                         PanierManager panierManager = PanierManager.getInstance(DetailfilmActivity.this);
                         panierManager.ajouterFilm(filmActuel);
 

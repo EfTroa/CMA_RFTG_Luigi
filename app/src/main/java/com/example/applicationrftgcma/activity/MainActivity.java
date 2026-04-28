@@ -13,6 +13,12 @@ package com.example.applicationrftgcma.activity;
  *
  * À chaque lancement, la session est effacée (clearToken()) pour forcer la reconnexion.
  *
+ * Responsabilités de cette activité par rapport à LoginTask :
+ *   - Récupérer les valeurs saisies (email, mot de passe)
+ *   - Hasher le mot de passe en MD5 (encrypterChaineMD5)
+ *   - Construire le JSONObject body { "email": "...", "password": "hash_md5..." }
+ *   - Passer le body prêt à LoginTask (le Task ne construit plus le body lui-même)
+ *
  * Implémente AdapterView.OnItemSelectedListener pour réagir aux changements du Spinner d'URL.
  */
 
@@ -32,6 +38,11 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.security.MessageDigest;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
@@ -73,6 +84,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         adapterListeURLs.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerURLs.setAdapter(adapterListeURLs);
 
+        // Pré-remplissage des champs pour accélérer les tests — à retirer en production
+        etEmail.setText("cma@cma.com");
+        etPassword.setText("password");
+
         // Forcer la déconnexion à chaque lancement pour éviter les sessions fantômes
         TokenManager.getInstance(this).clearToken();
     }
@@ -99,8 +114,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     /**
      * Déclenché par le bouton "Se connecter" (android:onClick dans le layout).
-     * Valide les champs, met à jour l'URL si saisie manuellement,
-     * puis lance LoginTask pour authentifier l'utilisateur via l'API.
+     * Valide les champs, met à jour l'URL si saisie manuellement, construit le body JSON
+     * avec le mot de passe hashé en MD5, puis lance LoginTask.
      *
      * @param view La vue du bouton qui a déclenché l'appel (non utilisée)
      */
@@ -126,6 +141,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             UrlManager.setURLConnexion(urlSaisie);
         }
 
+        // Construire le corps JSON de la requête de connexion
+        // Le mot de passe est hashé en MD5 ici (attendu par l'API côté serveur)
+        // Note : MD5 est utilisé pour correspondre au format attendu par l'API existante
+        JSONObject body;
+        try {
+            body = new JSONObject();
+            body.put("email", email);
+            body.put("password", encrypterChaineMD5(password));
+        } catch (JSONException e) {
+            Toast.makeText(this, "Erreur interne lors de la préparation des données", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         // Afficher un ProgressDialog non-annulable pendant l'appel réseau
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Connexion en cours...");
@@ -133,7 +161,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         progressDialog.show();
 
         // Lancer la tâche de login en arrière-plan
-        LoginTask loginTask = new LoginTask(email, password, new LoginTask.LoginCallback() {
+        // Le body est déjà prêt — LoginTask n'a plus à le construire ni à hasher le mot de passe
+        LoginTask loginTask = new LoginTask(this, body, new LoginTask.LoginCallback() {
             @Override
             public void onLoginSuccess(Integer customerId) {
                 // Fermer le ProgressDialog avant toute action UI
@@ -168,5 +197,45 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
 
         loginTask.execute();
+    }
+
+    /**
+     * Convertit une chaîne de caractères en son empreinte MD5 hexadécimale.
+     * Utilisé pour hasher le mot de passe avant construction du body JSON.
+     *
+     * Fonctionnement :
+     *   1. On obtient les bytes de la chaîne
+     *   2. MessageDigest calcule le hash MD5 (tableau de 16 bytes)
+     *   3. On convertit chaque byte en sa représentation hexadécimale sur 2 caractères
+     *      (le padding '0' à gauche gère les bytes dont la valeur hex < 16)
+     *
+     * Note sécurité : MD5 est utilisé ici pour correspondre au format attendu par l'API
+     * (hachage côté client avant envoi). Ce n'est pas recommandé en production.
+     *
+     * @param chaine Le mot de passe en clair à hasher
+     * @return La représentation hexadécimale du hash MD5 (32 caractères)
+     */
+    private String encrypterChaineMD5(String chaine) {
+        byte[] chaineBytes = chaine.getBytes();
+        byte[] hash = null;
+        try {
+            hash = MessageDigest.getInstance("MD5").digest(chaineBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        StringBuffer hashString = new StringBuffer();
+        for (int i = 0; i < hash.length; ++i) {
+            String hex = Integer.toHexString(hash[i]);
+            // toHexString() des bytes négatifs donne 8 caractères (ex: "ffffff80")
+            // On ne garde que les 2 derniers pour avoir la représentation correcte sur 1 byte
+            if (hex.length() == 1) {
+                // Cas d'un byte dont la valeur hex tient sur 1 chiffre → on ajoute un '0' devant
+                hashString.append('0');
+                hashString.append(hex.charAt(hex.length() - 1));
+            } else {
+                hashString.append(hex.substring(hex.length() - 2));
+            }
+        }
+        return hashString.toString();
     }
 }
